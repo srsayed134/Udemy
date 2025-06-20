@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P2P Transaction Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+      color: #000;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.dark {
+      background: #121212;
+      color: #eee;
+    }
+    h1 { text-align: center; }
+    form, table, #summary { max-width: 900px; margin: 20px auto; }
+    input, select, button { padding: 10px; margin: 5px; border-radius: 5px; border: 1px solid #ccc; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px; border: 1px solid #ccc; text-align: center; }
+    th { background-color: #eee; }
+    body.dark th { background-color: #333; }
+    .actions { display: flex; justify-content: center; gap: 10px; }
+    #summary { padding: 10px; background: #fff; border: 1px solid #ccc; border-radius: 5px; }
+    body.dark #summary { background: #1e1e1e; border-color: #444; }
+  </style>
+</head>
+<body>
+  <h1>P2P Transaction Tracker</h1>
+
+  <form id="transaction-form">
+    <input type="date" id="date" required>
+    <select id="type">
+      <option value="buy">Buy</option>
+      <option value="sell">Sell</option>
+    </select>
+    <select id="method">
+      <option value="nagad">Nagad</option>
+      <option value="bank">Bank Transfer</option>
+    </select>
+    <input type="number" id="amount" placeholder="Amount (BDT)" step="any" required>
+    <input type="number" id="rate" placeholder="Rate (BDT/USDT)" step="any" required>
+    <button type="submit">Add Transaction</button>
+    <button type="button" onclick="printPage()">Print</button>
+    <button type="button" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+  </form>
+
+  <table id="transaction-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Method</th>
+        <th>Amount (BDT)</th>
+        <th>Rate</th>
+        <th>USDT</th>
+        <th>Fee (0.2%)</th>
+        <th>Nagad Comm (0.4%)</th>
+        <th>Net BDT</th>
+        <th>Profit</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div id="summary">
+    <h3>Summary</h3>
+    <p id="total-buy"></p>
+    <p id="total-sell"></p>
+    <p id="total-profit"></p>
+    <label>USDT Balance: <input type="number" id="usdt-balance" value="0" step="any"></label><br>
+    <label>Nagad Balance: <input type="number" id="nagad-balance" value="0" step="any"></label><br>
+    <label>Bank Balance: <input type="number" id="bank-balance" value="0" step="any"></label>
+  </div>
+
+  <script>
+    const form = document.getElementById('transaction-form');
+    const tableBody = document.querySelector('#transaction-table tbody');
+    const totalBuyEl = document.getElementById('total-buy');
+    const totalSellEl = document.getElementById('total-sell');
+    const totalProfitEl = document.getElementById('total-profit');
+    const usdtBalanceEl = document.getElementById('usdt-balance');
+    const nagadBalanceEl = document.getElementById('nagad-balance');
+    const bankBalanceEl = document.getElementById('bank-balance');
+    const dateInput = document.getElementById('date');
+
+    let transactions = [];
+
+    // Auto set today's date
+    dateInput.valueAsDate = new Date();
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const date = dateInput.value;
+      const type = document.getElementById('type').value;
+      const method = document.getElementById('method').value;
+      const amountInput = document.getElementById('amount');
+      const rateInput = document.getElementById('rate');
+
+      const amount = parseFloat(amountInput.value);
+      const rate = parseFloat(rateInput.value);
+
+      const usdt = amount / rate;
+      const fee = amount * 0.002;
+      const nagadComm = method === 'nagad' ? amount * 0.004 : 0;
+      const net = type === 'buy' ? (amount + fee - nagadComm) : (amount - fee + nagadComm);
+
+      let profit = 0;
+      if (type === 'sell') {
+        const matchingBuy = transactions.find(t => t.type === 'buy' && !t.paired);
+        if (matchingBuy) {
+          profit = net - matchingBuy.net;
+          matchingBuy.paired = true;
+        }
+      }
+
+      const transaction = {
+        date, type, method, amount, rate, usdt, fee, nagadComm, net, profit,
+        amountRaw: amountInput.value,
+        rateRaw: rateInput.value
+      };
+
+      transactions.push(transaction);
+
+      if (type === 'buy') {
+        usdtBalanceEl.value = (parseFloat(usdtBalanceEl.value) + usdt).toFixed(8);
+        if (method === 'nagad') {
+          nagadBalanceEl.value = (parseFloat(nagadBalanceEl.value) - amount - fee + nagadComm).toFixed(2);
+        } else {
+          bankBalanceEl.value = (parseFloat(bankBalanceEl.value) - amount - fee).toFixed(2);
+        }
+      } else if (type === 'sell') {
+        usdtBalanceEl.value = (parseFloat(usdtBalanceEl.value) - usdt).toFixed(8);
+        if (method === 'nagad') {
+          nagadBalanceEl.value = (parseFloat(nagadBalanceEl.value) + amount - fee + nagadComm).toFixed(2);
+        } else {
+          bankBalanceEl.value = (parseFloat(bankBalanceEl.value) + amount - fee).toFixed(2);
+        }
+      }
+
+      renderTable();
+      updateSummary();
+      form.reset();
+      dateInput.valueAsDate = new Date();
+    });
+
+    function renderTable() {
+      tableBody.innerHTML = '';
+      transactions.forEach((t, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${t.date}</td>
+          <td>${t.type}</td>
+          <td>${t.method}</td>
+          <td>${t.amountRaw}</td>
+          <td>${t.rateRaw}</td>
+          <td>${t.usdt.toFixed(8)}</td>
+          <td>${t.fee.toFixed(2)}</td>
+          <td>${t.nagadComm.toFixed(2)}</td>
+          <td>${t.net.toFixed(2)}</td>
+          <td>${t.profit.toFixed(2)}</td>
+          <td class="actions">
+            <button onclick="deleteTransaction(${index})">Delete</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function updateSummary() {
+      let totalBuy = 0, totalSell = 0, totalProfit = 0;
+      transactions.forEach(t => {
+        if (t.type === 'buy') totalBuy += t.net;
+        else if (t.type === 'sell') totalSell += t.net;
+        totalProfit += t.profit;
+      });
+      totalBuyEl.textContent = `Total Buy Cost: ${totalBuy.toFixed(2)} BDT`;
+      totalSellEl.textContent = `Total Sell Income: ${totalSell.toFixed(2)} BDT`;
+      totalProfitEl.textContent = `Total Profit: ${totalProfit.toFixed(2)} BDT`;
+    }
+
+    function deleteTransaction(index) {
+      const transaction = transactions[index];
+      if (transaction.type === 'buy') {
+        usdtBalanceEl.value = (parseFloat(usdtBalanceEl.value) - transaction.usdt).toFixed(8);
+        if (transaction.method === 'nagad') {
+          nagadBalanceEl.value = (parseFloat(nagadBalanceEl.value) + transaction.amount + transaction.fee - transaction.nagadComm).toFixed(2);
+        } else {
+          bankBalanceEl.value = (parseFloat(bankBalanceEl.value) + transaction.amount + transaction.fee).toFixed(2);
+        }
+      } else if (transaction.type === 'sell') {
+        usdtBalanceEl.value = (parseFloat(usdtBalanceEl.value) + transaction.usdt).toFixed(8);
+        if (transaction.method === 'nagad') {
+          nagadBalanceEl.value = (parseFloat(nagadBalanceEl.value) - transaction.amount + transaction.fee - transaction.nagadComm).toFixed(2);
+        } else {
+          bankBalanceEl.value = (parseFloat(bankBalanceEl.value) - transaction.amount + transaction.fee).toFixed(2);
+        }
+      }
+
+      transactions.splice(index, 1);
+      renderTable();
+      updateSummary();
+    }
+
+    function printPage() {
+      window.print();
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
+    }
+  </script>
+</body>
+</html>

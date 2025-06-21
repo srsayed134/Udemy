@@ -71,7 +71,31 @@ document
     
 })
 
+//Example-8
 
+document
+.getElementById("feedbackForm")
+.addEventListener("submit", function(event){
+    event.preventDefault();
+    let feedBack = document.getElementById("feedbackInput").value;
+    document.getElementById("feedbackDisplay").textContent = `Feedback is: ${feedBack}`;
+    
+})
+
+//Example-9 
+
+document.addEventListener("DOMContentLoaded", function(){
+    document.getElementById("domstatus").textContent = "DOM is loaded ";
+})
+
+//Example-10
+
+document
+.getElementById("toggleButton")
+.addEventListener("click", function(){
+    let toggleItem = document.getElementById("toggleElement");
+    toggleItem.classList.toggle("highlight")
+})
 
 
 

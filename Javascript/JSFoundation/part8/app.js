@@ -52,6 +52,24 @@ document
     taskList.lastElementChild.remove()
 })
 
+//Example-6
+
+document
+.getElementById("clickMeButton")
+.addEventListener("dblclick", function(){
+    alert("chai code")
+})
+
+//Example-7
+
+document
+.getElementById("teaList")
+.addEventListener("click", function(event){
+    if(event.target && event.target.matches(".teaItem")){
+        alert(`You selected the: `+ event.target.textContent)
+    }
+    
+})
 
 
 

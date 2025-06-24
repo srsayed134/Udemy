@@ -43,3 +43,33 @@ karanArjun.__proto__ = employee;
 sadif.__proto__ = employee;
 yakkob.__proto__ = employee;
 korim.__proto__ = employee;
+
+
+//Create class
+
+class ToyotaCar {
+    constructor(brand){
+        console.log("This is from constructor");
+        this.brandName = brand;
+        
+    }
+    start(){
+        console.log("Car is started");
+        
+    }
+
+    stop(){
+        console.log("Car is stop");
+        
+    }
+    /*
+    setBrand(brand){
+        this.brandName = brand;
+    } */
+}
+
+let fortuner = new ToyotaCar("fortunerS25"); //give fortuner the class
+// fortuner.setBrand("fortunerS100") //set variable for fortuner
+let lexus = new ToyotaCar("lexusThailandVersion"); //this argument goes to constructor and con. create variable by this.brandName
+// lexus.setBrand("lexus9s5");
+let landCruisor = new ToyotaCar();

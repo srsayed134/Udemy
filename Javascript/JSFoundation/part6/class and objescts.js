@@ -48,9 +48,10 @@ korim.__proto__ = employee;
 //Create class
 
 class ToyotaCar {
-    constructor(brand){
+    constructor(brand, milage){
         console.log("This is from constructor");
         this.brandName = brand;
+        this.carmilage = milage;
         
     }
     start(){
@@ -72,4 +73,8 @@ let fortuner = new ToyotaCar("fortunerS25"); //give fortuner the class
 // fortuner.setBrand("fortunerS100") //set variable for fortuner
 let lexus = new ToyotaCar("lexusThailandVersion"); //this argument goes to constructor and con. create variable by this.brandName
 // lexus.setBrand("lexus9s5");
-let landCruisor = new ToyotaCar();
+let landCruisor = new ToyotaCar(); //if i don't give argument it will be undefined 
+let corolla = new ToyotaCar("corolla2023", 17);
+console.log(corolla);
+
+//Inheritance in js

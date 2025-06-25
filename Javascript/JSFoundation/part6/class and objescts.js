@@ -77,4 +77,4 @@ let landCruisor = new ToyotaCar(); //if i don't give argument it will be undefin
 let corolla = new ToyotaCar("corolla2023", 17);
 console.log(corolla);
 
-//Inheritance in js
+

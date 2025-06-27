@@ -73,3 +73,10 @@ getData(1, () => {
     getData(3)
   })
 }) */
+
+//Promises
+
+let promise = new Promise((resolve, reject)=>{
+    console.log("I am a promise");
+    reject("Some error occurd")
+})

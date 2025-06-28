@@ -1,6 +1,8 @@
 // //console.log("One");
 // //console.log("Two");
 
+// const { log } = require("async")
+
 // const { reject } = require("async");
 
 // setTimeout(()=>{
@@ -96,21 +98,54 @@
 //   })
 // } 
 
-const getPromise = () => {
-  return new Promise ((resolve, reject) =>{
-    console.log("I am a promise");
-    resolve("Success");
-    // reject("Rejected")
-});
-};
+// const getPromise = () => {
+//   return new Promise ((resolve, reject) =>{
+//     console.log("I am a promise");
+//     resolve("Success");
+//     // reject("Rejected")
+// });
+// };
 
-let holdPromise = getPromise();
+// let holdPromise = getPromise();
 
-holdPromise.then((result) => {
-  console.log("Promiss fullfiled", result);
-});
+// holdPromise.then((result) => {
+//   console.log("Promiss fullfiled", result);
+// });
 
-holdPromise.catch((error)=>{
-  console.log("Promise rejected", error);
+// holdPromise.catch((error)=>{
+//   console.log("Promise rejected", error);
   
+// })
+
+
+//Promises chaining
+function asyncFunc(){
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      console.log("Some data1");
+      resolve("success");
+    }, 4000);
+  });
+}
+function asyncFunc2(){
+  return new Promise ((resolve, reject)=>{
+     setTimeout(()=>{
+      console.log("Some data2");
+      resolve("success")
+     }, 4000)
+  })
+}
+
+console.log("fathching data1........");
+
+let holdPromise = asyncFunc();
+holdPromise.then((result)=>{
+    
+    //fatching data after asyncFun1
+    console.log("fatching data2.........");
+    let holdPromise2 = asyncFunc2();
+    holdPromise2.then((result)=>{
+    })
+       
 })
+

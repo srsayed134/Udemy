@@ -136,16 +136,7 @@ function asyncFunc2(){
   })
 }
 
-console.log("fathching data1........");
-
-let holdPromise = asyncFunc();
-holdPromise.then((result)=>{
-    
-    //fatching data after asyncFun1
-    console.log("fatching data2.........");
-    let holdPromise2 = asyncFunc2();
-    holdPromise2.then((result)=>{
-    })
-       
+asyncFunc().then((result)=>{
+    asyncFunc2().then((result)=>{})    
 })
 
